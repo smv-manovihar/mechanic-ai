@@ -9,6 +9,7 @@ const chatSessionSchema = new mongoose.Schema({
     message: { type: String, required: true },
     timestamp: { type: Date, default: Date.now }
   }],
+  lastMessage: { type: Date , default: Date.now},
   createdAt: { type: Date, default: Date.now }
 });
 
