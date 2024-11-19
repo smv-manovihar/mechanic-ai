@@ -68,7 +68,9 @@ const chatController = {
 
       res.status(200).json({
         success: true,
-        response: data, // LLM response data
+        response: data.response, // LLM response data
+        replacementParts: data.replacementParts,
+        carModel:data.carModel,
         message: "Messages added successfully",
       });
     } catch (error) {
@@ -146,6 +148,8 @@ async function generate(userId, sessionId, message, newSession) {
     const response = await axios.post(llm_url, {
       prompt: message,
       new: newSession,
+      userId,
+      sessionId
     });
 
     const data = response.data;
@@ -162,7 +166,11 @@ async function generate(userId, sessionId, message, newSession) {
 
     await updateConvo(userId, sessionId, "bot", data.response);
 
-    return data.response;
+    return {
+      response:data.response,
+      replacementParts: data.replacement_parts,
+      carModel: data.car_model
+    };
   } catch (error) {
     console.error("Error in LLM server", error);
     return "Oops! Something went wrong.";
