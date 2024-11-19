@@ -39,7 +39,9 @@ const chatController = {
       res.status(201).json({
         success: true,
         sessionId,
-        response: data, // LLM response data
+        response: data.response,
+        replacementParts: data.replacement_parts,
+        carModel:data.car_model, // LLM response data
         message: "New chat session created",
       });
     } catch (error) {
