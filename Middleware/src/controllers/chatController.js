@@ -39,10 +39,9 @@ const chatController = {
       res.status(201).json({
         success: true,
         sessionId,
-        title:data.title,
         response: data.response,
-        replacementParts: data.replacementParts,
-        carModel:data.carModel, // LLM response data
+        replacementParts: data.replacement_parts,
+        carModel:data.car_model, // LLM response data
         message: "New chat session created",
       });
     } catch (error) {
@@ -165,14 +164,6 @@ async function generate(userId, sessionId, message, newSession) {
           title: data.title,
         }
       );
-      await updateConvo(userId, sessionId, "bot", data.response);
-      
-      return {
-        response:data.response,
-        title:data.title,
-        replacementParts: data.replacement_parts,
-        carModel: data.car_model
-      };
     }
 
     await updateConvo(userId, sessionId, "bot", data.response);

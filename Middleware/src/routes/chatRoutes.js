@@ -5,7 +5,7 @@ const validateSession = require('../components/validateSession');
 
 // Create a new chat session
 // request body = { userId,  message }
-// returns = { success, sessionId, title, response, replacmentParts, carModel }
+// returns = { success, sessionId, response, replacmentParts, carModel }
 router.post('/new', chatController.createSession);
 
 // To get response in already existing chat session
