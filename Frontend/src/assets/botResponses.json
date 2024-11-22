@@ -1,0 +1,39 @@
+{
+    "deadBattery": {
+      "title": "Dead Battery",
+      "steps": [
+        "1. Check if the lights or accessories were left on.",
+        "2. Try jump-starting the car with jumper cables.",
+        "3. If jump-starting doesn't work, the battery may need replacement."
+      ],
+      "icon": "battery_icon"
+    },
+    "flatTire": {
+      "title": "Flat Tire",
+      "steps": [
+        "1. Look for visible punctures or signs of damage on the tire.",
+        "2. Use a jack to lift the car and remove the flat tire.",
+        "3. Replace the tire with a spare or patch the damaged one."
+      ],
+      "icon": "flattyre_icon"
+    },
+    "overheatingEngine": {
+      "title": "Overheating Engine",
+      "steps": [
+        "1. Check the coolant level in the radiator.",
+        "2. Look for any leaks in the cooling system.",
+        "3. If necessary, replace the thermostat or radiator fan."
+      ],
+      "icon": "engine_icon"
+    },
+    "brakeIssues": {
+      "title": "Brake Problems",
+      "steps": [
+        "1. Check for low brake fluid levels.",
+        "2. Inspect the brake pads for wear.",
+        "3. Replace the brake pads or refill the brake fluid as needed."
+      ],
+      "icon": "brakes_icon"
+    }
+  }
+  
