@@ -1,0 +1,85 @@
+/* auth.css */
+
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+    max-height: 400px;
+    margin: 120px auto;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    text-align: center;
+    font-family: Arial, sans-serif;
+  }
+  
+  .auth-container h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .auth-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .auth-container input {
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  
+  .auth-container input:focus {
+    border-color: #7b61ff;
+  }
+  
+  .auth-container button {
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: #7b61ff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .auth-container button:hover {
+    background-color: #674bcb;
+  }
+  
+  .auth-container p {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .auth-container p button {
+    background: none;
+    border: none;
+    color: #7b61ff;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  .auth-container p button:hover {
+    text-decoration: underline;
+  }
+  
+
+
+
+
+
+
+
+
+
+
+  
