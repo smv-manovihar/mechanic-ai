@@ -8,9 +8,8 @@ const chatSessionSchema = new mongoose.Schema({
     sender: { type: String, enum: ['user', 'bot'], required: true },
     message: { type: String, required: true },
     timestamp: { type: Date, default: Date.now }
-  }],
-  lastMessage: { type: Date , default: Date.now},
-  createdAt: { type: Date, default: Date.now }
+  }]},{
+  timestamps:true // createdAt, updatedAt
 });
 
 const getChatModel = (userId) => {

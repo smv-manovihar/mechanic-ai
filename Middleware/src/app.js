@@ -5,7 +5,7 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 
-// Connect to MongoDB
+// Connect to MongoDB Chats Database
 connectDB(process.env.MECHAI_CHATS_URI);
 
 // Routes

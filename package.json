@@ -1,0 +1,13 @@
+{
+  "name": "mechanicai",
+  "version": "1.0.0",
+  "description": "An AI assistant which can help you repair your car and suggest actions based on your problem!",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon Middleware/src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

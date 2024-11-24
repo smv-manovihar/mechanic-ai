@@ -1,6 +1,7 @@
 const { v4: uuidv4 } = require("uuid");
 const { getChatModel } = require("../components/chatSession");
 const axios = require("axios");
+const { response } = require("express");
 const llm_url = process.env.LLM;
 
 const chatController = {
@@ -28,20 +29,35 @@ const chatController = {
         title,
         conversation: [],
       });
+
       await newSession.save();
 
       // Update conversation with user's message
-      await updateConvo(userId, sessionId, "user", message);
+      const dbRes = await updateConvo(userId, sessionId, "user", message);
+
+      // If saving fails
+      if (!dbRes) {
+        console.error("Error in Database Updation");
+        return {
+          success: false,
+          response: "Oops! Something went wrong. Please try again",
+          error: "Failed to save the message",
+        };
+      }
 
       // Generate LLM response (wait for the response)
       const data = await generate(userId, sessionId, message, true);
 
+      if (!data.success) {
+        res.status(501).json(data);
+      }
+
       res.status(201).json({
         success: true,
         sessionId,
-        response: data.response,
+        response: data.response, // LLM response
         replacementParts: data.replacement_parts,
-        carModel:data.car_model, // LLM response data
+        carModel: data.car_model,
         message: "New chat session created",
       });
     } catch (error) {
@@ -63,16 +79,28 @@ const chatController = {
       }
 
       // Update conversation with user's message
-      await updateConvo(userId, sessionId, "user", message);
+      const dbRes = await updateConvo(userId, sessionId, "user", message);
 
+      if (!dbRes) {
+        console.error("Error in Database Updation");
+        return {
+          success: false,
+          response: "Oops! Something went wrong. Please try again",
+          error: "Failed to save the message",
+        };
+      }
       // Generate LLM response (wait for the response)
       const data = await generate(userId, sessionId, message, false);
 
+      if (!data.success) {
+        res.status(501).json(data);
+      }
+
       res.status(200).json({
         success: true,
-        response: data.response, // LLM response data
+        response: data.response, // LLM response
         replacementParts: data.replacementParts,
-        carModel:data.carModel,
+        carModel: data.carModel,
         message: "Messages added successfully",
       });
     } catch (error) {
@@ -86,23 +114,34 @@ const chatController = {
   getHistory: async (req, res) => {
     try {
       const { userId, sessionId } = req.body;
+      if (!userId || !sessionId) {
+        return res.status(400).json({
+          error: "userId and sessionId are required",
+        });
+      }
       const ChatModel = getChatModel(userId);
       const data = await ChatModel.findOne({ sessionId });
+      if (!data) {
+        return res.stats(404).json({ error: "Chat not found" });
+      }
       res.status(200).json({
         success: true,
         conversation: data.conversation,
       });
     } catch (error) {
-      console.log(error);
-      res.status(500).json({ error: "Failed to fetch conversation" });
+      console.log("Error in getHistory:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to fetch conversation",
+      });
     }
   },
   // Get the user's chat sessions
-  // request body structure  = { userId }
+  // request body structure  = { userId, offset }
   // returns = { chatList : [...{ sessionId , title }]}
   getChats: async (req, res) => {
     try {
-      const { userId } = req.body;
+      const { userId, offset = 0 } = req.body;
 
       // Check if userId exists
       if (!userId) {
@@ -112,15 +151,77 @@ const chatController = {
 
       const ChatModel = getChatModel(userId);
 
-      // Retrieve chats with title and sessionId only
+      // Convert offset and limit to integers and validate
+      const offsetInt = parseInt(offset, 10);
+
+      if (isNaN(offsetInt) || offsetInt < 0) {
+        return res.status(400).json({ error: "Invalid offset value" });
+      }
+
+      // Retrieve chats with offset and limit
       const chats = await ChatModel.find({}, { _id: 0, title: 1, sessionId: 1 })
-        .sort({ lastMessage: -1 })
+        .sort({ updatedAt: -1 })
+        .skip(offsetInt)
         .limit(10);
 
-      res.status(200).json({ chatList: chats });
+      res.status(200).json({
+        chatList: chats,
+        offset: offsetInt + chats.length, // Return the new offset
+      });
     } catch (error) {
       console.error("Error in getChats:", error);
       res.status(500).json({ error: "Failed to fetch chats" });
+    }
+  },
+
+  // Let's the frontend change the title of the chat
+  // request body structure = { userId, sessionId, title }
+  // returns = { success, title, error}
+  renameTitle: async (req, res) => {
+    const { userId, sessionId, title } = req.body;
+    const ChatModel = getChatModel(userId);
+    try {
+      await ChatModel.updateOne(
+        { sessionId },
+        {
+          $set: {
+            title: title,
+          },
+        }
+      );
+      res.status(200).json({
+        success: true,
+        title,
+      });
+    } catch (error) {
+      console.log("Failed to update title");
+      res.status(500).json({
+        success: false,
+        error: "Failed to update the title",
+      });
+    }
+  },
+
+  // Allows deletion of chats from database
+  // request body = { userId, sessionId }
+  // returns = { success , error }
+  deleteChat: async (req, res) => {
+    const { userId, sessionId } = req.body;
+    const ChatModel = getChatModel(userId);
+
+    try {
+      const result = await ChatModel.deleteOne({
+        sessionId: sessionId,
+      });
+      if (result.deletedCount == 0) {
+        return res.status(404).json({ error: "Chat not found" });
+      }
+      res.status(204).json({
+        success: true
+      });
+    } catch (error) {
+      console.log("Error in deleteChat:", error);
+      res.status(500).json({ error: "Failed to delete the chat" });
     }
   },
 };
@@ -128,21 +229,24 @@ const chatController = {
 // Helper functions
 async function updateConvo(userId, sessionId, sender, message) {
   const ChatModel = getChatModel(userId);
-  await ChatModel.updateOne(
-    { sessionId },
-    {
-      $push: {
-        conversation: {
-          sender,
-          message,
-          timestamp: new Date(),
+  try {
+    await ChatModel.updateOne(
+      { sessionId },
+      {
+        $push: {
+          conversation: {
+            sender,
+            message,
+            timestamp: new Date(),
+          },
         },
-      },
-      $set: {
-        lastMessage: new Date(),
-      },
-    }
-  );
+      }
+    );
+    return true;
+  } catch (error) {
+    console.log("MongoDB error");
+    return false;
+  }
 }
 
 async function generate(userId, sessionId, message, newSession) {
@@ -151,7 +255,7 @@ async function generate(userId, sessionId, message, newSession) {
       prompt: message,
       new: newSession,
       userId,
-      sessionId
+      sessionId,
     });
 
     const data = response.data;
@@ -166,16 +270,44 @@ async function generate(userId, sessionId, message, newSession) {
       );
     }
 
-    await updateConvo(userId, sessionId, "bot", data.response);
-
+    const dbRes = await updateConvo(userId, sessionId, "bot", data.response);
+    if (!dbRes) {
+      console.error("Error in Database Updation");
+      return {
+        success: false,
+        response: "Oops! Something went wrong. Please try again",
+        error: "Failed to save the message",
+      };
+    }
     return {
-      response:data.response,
+      success: true,
+      response: data.response,
       replacementParts: data.replacement_parts,
-      carModel: data.car_model
+      carModel: data.car_model,
     };
   } catch (error) {
-    console.error("Error in LLM server", error);
-    return "Oops! Something went wrong.";
+    console.error("Error in LLM server");
+
+    const dbRes = await updateConvo(
+      userId,
+      sessionId,
+      "bot",
+      "Oops! Something went wrong. Please try again"
+    );
+
+    if (!dbRes) {
+      console.error("Error in Database Updation");
+      return {
+        success: false,
+        response: "Oops! Something went wrong. Please try again",
+        error: "Failed to save the message",
+      };
+    }
+    return {
+      success: false,
+      response: "Oops! Something went wrong. Please try again",
+      error: "Failed to generate response",
+    };
   }
 }
 
