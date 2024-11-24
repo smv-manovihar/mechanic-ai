@@ -2,5 +2,5 @@
 /Data Processing
 mechanic-ai.zip
 .gitignore
-/Frontend/node_modules
-/Middleware/node_modules
+/Frontend/node_modules/
+/Middleware/node_modules/
