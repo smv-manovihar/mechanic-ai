@@ -18,6 +18,7 @@ import brakes_icon from './brakes_icon.png';
 import engine_icon from './engine_icon.png';
 import flattyre_icon from './flattyre_icon.jpeg';
 import usermessage_icon from './usermessage_icon.jpeg';
+import dots_icon from  './dots_icon.svg'
 
 export const assets = {
   history_icon,
@@ -39,5 +40,6 @@ export const assets = {
   brakes_icon,
   engine_icon,
   flattyre_icon,
-  usermessage_icon 
+  usermessage_icon ,
+  dots_icon
 };

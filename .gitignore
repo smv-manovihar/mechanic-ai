@@ -1,6 +1,7 @@
 .env
-/Data Processing
+/Data Processing/
 mechanic-ai.zip
 .gitignore
 /Frontend/node_modules/
 /Middleware/node_modules/
+/google-gemini-clone/
