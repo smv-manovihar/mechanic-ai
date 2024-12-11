@@ -2,8 +2,8 @@ const { v4: uuidv4 } = require("uuid");
 const { getChatModel } = require("../components/chatSession");
 const axios = require("axios");
 const { response } = require("express");
-// const llm_url = process.env.LLM;
-const llm_url = process.env.LLM_TEST;
+const llm_url = process.env.LLM;
+// const llm_url = process.env.LLM_TEST;
 
 const chatController = {
   // Creates a new session
