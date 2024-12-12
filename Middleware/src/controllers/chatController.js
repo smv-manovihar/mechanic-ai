@@ -1,7 +1,6 @@
 const { v4: uuidv4 } = require("uuid");
 const { getChatModel } = require("../components/chatSession");
 const axios = require("axios");
-const { response } = require("express");
 const llm_url = process.env.LLM;
 // const llm_url = process.env.LLM_TEST;
 
@@ -18,6 +17,11 @@ const chatController = {
 
       if (!userId) {
         return res.status(400).json({ error: "userId is required" });
+      }
+
+      const status = await checkServerStatus();
+      if (!status.success) {
+        return res.status(503).json(status);
       }
 
       const sessionId = uuidv4();
@@ -50,6 +54,9 @@ const chatController = {
       const data = await generate(userId, sessionId, message);
 
       if (!data.success) {
+        if (!data.status) {
+          return res.status(503).json(data);
+        }
         return res.status(500).json(data);
       }
 
@@ -98,6 +105,9 @@ const chatController = {
       const data = await generate(userId, sessionId, message);
 
       if (!data.success) {
+        if (!data.status) {
+          return res.status(503).json(data);
+        }
         return res.status(500).json(data);
       }
 
@@ -246,6 +256,22 @@ const chatController = {
 };
 
 // Helper functions
+async function checkServerStatus() {
+  try {
+    const llm_status = await axios.get(llm_url);
+    return llm_status.data;
+  } catch (error) {
+    console.error("LLM server not found");
+
+    return {
+      success: false,
+      response:
+        "I'm sorry, but I'm currently unavailable. Please try again later!",
+      error: "LLM server is down.",
+    };
+  }
+}
+
 async function updateConvo(userId, sessionId, sender, message) {
   const ChatModel = getChatModel(userId);
   try {
@@ -270,18 +296,12 @@ async function updateConvo(userId, sessionId, sender, message) {
 
 async function generate(userId, sessionId, message) {
   try {
-    const response = await axios.post(llm_url, {
+    const response = await axios.post(llm_url + "/chat", {
       prompt: message,
       userId,
       sessionId,
     });
-    if (response.status === 404) {
-      return {
-        success: false,
-        response: "Oops! Something went wrong. Please try again",
-        error: "LLM server is not available currently, Please check later",
-      };
-    }
+
     const data = response.data;
 
     const ChatModel = getChatModel(userId);
@@ -291,7 +311,6 @@ async function generate(userId, sessionId, message) {
     );
 
     const sendData = {
-      success: true,
       response: data.response,
       replacementParts: data.replacement_parts,
       carModel: data.car_model,
@@ -314,34 +333,36 @@ async function generate(userId, sessionId, message) {
       console.error("Error in Database Updation");
       return {
         success: false,
-        response: "Oops! Something went wrong. Please try again",
+        ...sendData,
         error: "Failed to save the message",
+        status: true,
       };
     }
 
-    return sendData;
+    return {
+      success: true,
+      ...sendData,
+      status: true,
+    };
   } catch (error) {
-    console.error("Error in LLM server");
+    if (error.response.status === 404) {
+      console.error("LLM server not found");
 
-    const dbRes = await updateConvo(
-      userId,
-      sessionId,
-      "bot",
-      "Oops! Something went wrong. Please try again"
-    );
-
-    if (!dbRes) {
-      console.error("Error in Database Updation");
       return {
         success: false,
-        response: "Oops! Something went wrong. Please try again",
-        error: "Failed to save the message",
+        response:
+          "I'm sorry, but I'm currently unavailable. Please try again later!",
+        error: "LLM server is down.",
+        status: false,
       };
     }
+
+    console.error("Error in LLM server");
     return {
       success: false,
       response: "Oops! Something went wrong. Please try again",
       error: "Failed to generate response",
+      status: true,
     };
   }
 }
