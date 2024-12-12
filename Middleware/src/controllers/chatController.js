@@ -10,7 +10,7 @@ const chatController = {
   // Sends the user's prompt to the LLM Server
   // Adds the LLM's response to the conversation of the session
   // request body = { userId,  message }
-  // returns = { success, sessionId, response }
+  // returns = { success, sessionId, response, replacementParts, carModel, title, error}
   createSession: async (req, res) => {
     try {
       const { userId, message } = req.body;
@@ -73,6 +73,7 @@ const chatController = {
       console.error(error);
       res.status(500).json({
         success: false,
+        response: "Oops! Something went wrong. Please try again",
         error: "Failed to create chat session",
       });
     }
@@ -81,7 +82,7 @@ const chatController = {
   // Sends the user's prompt to the LLM Server
   // Adds the LLM's response to the conversation of the session
   // request body = { userId, sessionId, message }
-  // returns = { success, response }
+  // returns = { success, response, replacementParts, carModel, title, error }
   addMessage: async (req, res) => {
     try {
       const { userId, sessionId, message } = req.body;
@@ -123,13 +124,14 @@ const chatController = {
       console.error(error);
       res.status(500).json({
         success: false,
+        response: "Oops! Something went wrong. Please try again",
         error: "Failed to send message",
       });
     }
   },
   // Get a chat session's conversation
   // request body = { userId, sessionId }
-  // returns = { success, conversation : [...<messages>] }
+  // returns = { success, conversation : [{sender = ["user","bot"],message,timestamp}...] }
   getHistory: async (req, res) => {
     try {
       const { userId, sessionId } = req.body;
@@ -158,7 +160,7 @@ const chatController = {
   },
   // Get the user's chat sessions
   // request body structure  = { userId, offset }
-  // returns = { chatList : [...{ sessionId , title }]}
+  // returns = { chatList : [{ sessionId , title, offset }...]}
   getChats: async (req, res) => {
     try {
       const { userId, offset = 0 } = req.body;
@@ -229,7 +231,7 @@ const chatController = {
 
   // Allows deletion of chats from database
   // request body = { userId, sessionId }
-  // returns = { success , error }
+  // returns = { success ,sessionId, error }
   deleteChat: async (req, res) => {
     const { userId, sessionId } = req.body;
     const ChatModel = getChatModel(userId);
@@ -239,7 +241,10 @@ const chatController = {
         sessionId: sessionId,
       });
       if (result.deletedCount == 0) {
-        return res.status(404).json({ error: "Chat not found" });
+        return res.status(404).json({
+          success: false,
+          error: "Chat not found",
+        });
       }
       res.status(200).json({
         success: true,
