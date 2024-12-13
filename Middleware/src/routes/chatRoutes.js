@@ -5,7 +5,7 @@ const validateSession = require('../components/validateSession');
 
 // Create a new chat session
 // request body = { userId,  message }
-// returns = { success, sessionId, response, replacementParts, carModel, title, error}
+// returns = { success, sessionId, error}
 // http status codes: { 
 // success: {
 //      201: Chat session created.
