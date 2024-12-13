@@ -10,7 +10,7 @@ const chatController = {
   // Sends the user's prompt to the LLM Server
   // Adds the LLM's response to the conversation of the session
   // request body = { userId,  message }
-  // returns = { success, sessionId, response, replacementParts, carModel, title, error}
+  // returns = { success, sessionId, error}
   createSession: async (req, res) => {
     try {
       const { userId, message } = req.body;
@@ -50,30 +50,14 @@ const chatController = {
         });
       }
 
-      // Generate LLM response (wait for the response)
-      const data = await generate(userId, sessionId, message);
-
-      if (!data.success) {
-        if (!data.status) {
-          return res.status(503).json(data);
-        }
-        return res.status(500).json(data);
-      }
-
       res.status(201).json({
         success: true,
         sessionId,
-        title: data.title,
-        response: data.response, // LLM response
-        replacementParts: data.replacement_parts,
-        carModel: data.car_model,
-        message: "New chat session created",
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         success: false,
-        response: "Oops! Something went wrong. Please try again",
         error: "Failed to create chat session",
       });
     }
