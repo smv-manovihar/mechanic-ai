@@ -1,0 +1,44 @@
+/* src/components/Auth/Loading.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@100..900&display=swap');
+
+.loading-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1em;
+  width: 100vw;  /* Full viewport width */
+  height: 100vh; /* Full viewport height */
+  background-color: transparent;
+  cursor: progress;
+  position: fixed;  /* Fixes position on the screen */
+  top: 0;
+  left: 0;
+  z-index: 1000;  /* Ensures the loader is above other content */
+}
+
+.text {
+  color: rgb(0, 0, 0);  /* Adjust text color if needed */
+  font-family: 'Urbanist', sans-serif;
+  font-weight: 800;
+}
+
+.dot {
+  background: rgb(0, 0, 0);
+  height: 0.65em;
+  width: 0.65em;
+  border-radius: 50%;
+  animation: move 0.6s ease infinite;
+}
+
+@keyframes move {
+  0% {
+    transform: translateX(50%);
+  }
+  50% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(50%);
+  }
+}

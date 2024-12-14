@@ -9,11 +9,13 @@
     "@testing-library/user-event": "^13.5.0",
     "appwrite": "^16.0.2",
     "axios": "^1.7.8",
+    "bootstrap": "^5.3.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "zustand": "^5.0.2"
   },
   "scripts": {
     "start": "react-scripts start",

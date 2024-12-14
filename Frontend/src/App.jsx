@@ -4,27 +4,34 @@ import Sidebar from "./components/Sidebar/Sidebar";
 import Main from "./components/Main/Main";
 import Login from "./components/Auth/Login";
 import Signup from "./components/Auth/Signup";
-import { account } from "./config/appwrite";
-
+import { account } from "./components/Auth/appwrite";
+import "./App.css";
+import Loading from "./components/Auth/Loading";
+import ChatPage from "./components/Main/ChatPage";
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [resetChat, setResetChat] = useState(false);
-  const [selectedChatConversation, setSelectedChatConversation] = useState([]); // Add state for chat conversation
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const checkSession = async () => {
-      try {
-        const user = await account.get();
-        if (user) {
-          setIsAuthenticated(true);
+      if (!user) {
+        try {
+          const user = await account.get();
+          if (user) {
+            setUser(user);
+            setIsAuthenticated(true);
+          }
+        } catch (error) {
+          console.error("Not logged in or session expired", error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error("Not logged in or session expired", error);
       }
     };
 
     checkSession();
-  }, []);
+  }, [user, setUser]);
 
   const handleLogout = async () => {
     try {
@@ -37,14 +44,20 @@ const App = () => {
     }
   };
 
-  const handleNewChat = () => {
-    setResetChat((prev) => !prev);
-    setSelectedChatConversation([]); // Clear selected chat conversation
-  };
-
-  const handleChatSelection = (conversation) => {
-    setSelectedChatConversation(conversation); // Store selected chat conversation
-  };
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <Loading />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
@@ -68,12 +81,17 @@ const App = () => {
         path="/"
         element={
           <>
-            <Sidebar onNewChat={handleNewChat} onChatSelect={handleChatSelection} />
-            <Main
-              resetChat={resetChat}
-              onLogout={handleLogout}
-              previousConversation={selectedChatConversation} // Pass conversation to Main
-            />
+            <Sidebar user={user}/>
+            <Main user={user} onLogout={handleLogout} />
+          </>
+        }
+      />
+      <Route
+        path="/chat/:sessionId"
+        element={
+          <>
+            <Sidebar user={user} />
+            <ChatPage user={user} onLogout={handleLogout} />
           </>
         }
       />
@@ -83,12 +101,3 @@ const App = () => {
 };
 
 export default App;
-
-
-
-
-
-
-
-
-
