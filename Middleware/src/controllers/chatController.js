@@ -65,8 +65,8 @@ const chatController = {
   // Adds the user's prompt to the already existing session in the database
   // Sends the user's prompt to the LLM Server
   // Adds the LLM's response to the conversation of the session
-  // request body = { userId, sessionId, message }
-  // returns = { success, response, replacementParts, carModel, title, error }
+  // request body = { userId, sessionId, title, message }
+  // returns = { success, response, urls, error }
   addMessage: async (req, res) => {
     try {
       const { userId, sessionId, message } = req.body;
@@ -95,14 +95,28 @@ const chatController = {
         }
         return res.status(500).json(data);
       }
-
-      res.status(200).json({
+      const sendData = {
         success: true,
-        response: data.response, // LLM response
-        replacementParts: data.replacementParts,
-        carModel: data.carModel,
+        response: data.response,
         title: data.title,
+        urls: null,
         message: "Messages added successfully",
+      };
+      
+      // Fetching SpareParts using API call
+      if (!data.replacementParts && !data.replacementParts[0]) {
+        try {
+          const response = axios.post(process.env.SPARE_PARTS_API, {
+            parts: data.replacementParts,
+            carModel: data.carModel,
+          });
+          sendData.urls = response.data.data;
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      res.status(200).json({
+        sendData,
       });
     } catch (error) {
       console.error(error);
