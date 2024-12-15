@@ -1,57 +1,78 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import "./Main.css";
 import Navbar from "../Navbar/Navbar";
 import { assets } from "../../assets/assets";
 import ChatAPI from "../../config/ChatAPI";
-import { account } from "../Auth/appwrite";
 
-const ChatPage = ( onLogout ) => {
+const ChatPage = ({ user, onLogout }) => {
   const { state } = useLocation();
+  const navigate = useNavigate(); // To reset state after processing
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const chatRef = useRef(null);
-  const [userId, setUserId] = useState("");
   const { sessionId } = useParams();
+  const [userId, setUserId] = useState(user?.$id || "");
+  const [hasInitialized, setHasInitialized] = useState(false);
 
-  
   useEffect(() => {
-    if (state?.userId && state?.initialMessage && state?.fromMain) {
-      const initialMessage = {
-        sender: "user",
-        message: state.initialMessage,
-      };
-      setUserId(state.userId);
-      setMessages([initialMessage]);
-      const handleBotResponse = async (userInput) => {
-        try {
-          const response = await ChatAPI.addMessage(userId, sessionId);
-          const botMessage = {
-            sender: "bot",
-            message: response.data.message,
-          };
-          setMessages((prevMessages) => [...prevMessages, botMessage]);
-        } catch (error) {
-          console.error("Error fetching bot response:", error);
-        }
-      };
-      handleBotResponse(state.initialMessage);
+    if (user?.$id && !userId) {
+      setUserId(user.$id);
     }
-  }, [userId, setUserId, state, setMessages, sessionId]);
+  }, [user, userId]);
+
+  const handleBotResponse = useCallback(
+    async (userInput) => {
+      try {
+        const data = await ChatAPI.addMessage(userId, sessionId, userInput);
+        if (!data.success) {
+          alert(data.error);
+          return;
+        }
+        const botMessage = {
+          sender: "bot",
+          message: data.response,
+        };
+        setMessages((prevMessages) => [...prevMessages, botMessage]);
+      } catch (error) {
+        console.error("Error in bot response:", error);
+      }
+    },
+    [userId, sessionId]
+  );
 
   useEffect(() => {
-    const fetchUserId = async () => {
-      try {
-        const user = await account.get();
-        setUserId(user?.$id || null);
-      } catch (error) {
-        console.error("Error fetching user:", error);
+    const initializeChat = async () => {
+      if (hasInitialized) return; // Prevent multiple initializations
+
+      if (state?.initialMessage && state?.fromMain) {
+        // Handle fresh navigation from Main
+        const initialMessage = {
+          sender: "user",
+          message: state.initialMessage,
+        };
+        setMessages([initialMessage]);
+        await handleBotResponse(state.initialMessage);
+        setHasInitialized(true);
+
+        // Clear state after processing to avoid repeated requests on reload
+        navigate(".", { replace: true, state: {} });
+      } else {
+        // Fetch chat history if no initialMessage in state
+        try {
+          const history = await ChatAPI.getHistory(userId, sessionId);
+          setMessages(history);
+          setHasInitialized(true);
+        } catch (error) {
+          console.error("Error fetching conversation history:", error);
+        }
       }
     };
-    if(!userId)
-    fetchUserId();
-  }, [userId, setUserId]);
 
+    if (userId && sessionId) {
+      initializeChat();
+    }
+  }, [userId, sessionId, state, handleBotResponse, hasInitialized, navigate]);
 
   useEffect(() => {
     if (chatRef.current) {
@@ -59,34 +80,19 @@ const ChatPage = ( onLogout ) => {
     }
   }, [messages]);
 
-  const handleBotResponse = async (userInput) => {
-    try {
-      const response = await ChatAPI.addMessage(userId, sessionId);
-      const botMessage = {
-        sender: "bot",
-        message: response.data.message,
-      };
-      setMessages((prevMessages) => [...prevMessages, botMessage]);
-    } catch (error) {
-      console.error("Error fetching bot response:", error);
-    }
-  };
-
   const handleSend = async () => {
     if (input.trim()) {
       const userMessage = { sender: "user", message: input };
       setMessages((prevMessages) => [...prevMessages, userMessage]);
       setInput("");
-      handleBotResponse(input.trim());
+      await handleBotResponse(input.trim());
     }
   };
 
- 
-
   return (
-    <div className="chat-page">
-      <Navbar onLogout={onLogout}/>
-      <div className="chat-container">
+    <div className="main">
+      <Navbar user={user} onLogout={onLogout} />
+      <div className="main-container">
         <div className="chat-section" ref={chatRef}>
           {messages.map((message, index) => (
             <div
@@ -113,7 +119,7 @@ const ChatPage = ( onLogout ) => {
           ))}
         </div>
 
-        <div className="chat-bottom">
+        <div className="main-bottom">
           <div className="search-box">
             <input
               type="text"
@@ -126,7 +132,7 @@ const ChatPage = ( onLogout ) => {
               <img src={assets.send_icon} alt="Send Icon" />
             </div>
           </div>
-          <p className="bottom-info">This may display inaccurate info</p>
+          <p className="bottom-info">AI may provide inaccurate info</p>
         </div>
       </div>
     </div>

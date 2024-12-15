@@ -9,16 +9,14 @@ import ChatAPI from "../../config/ChatAPI";
 const Main = ({ user, onLogout }) => {
   const [input, setInput] = useState("");
   const [cardMessages, setCardMessages] = useState([]);
-  const [userId, setUserId] = useState(null);
   const inputRef = useRef(null);
   const navigate = useNavigate();
+  const [userId, setUserId] = useState(user?.$id || "");
 
   useEffect(() => {
-    const fetchUserId = async () => {
+    if (user?.$id) {
       setUserId(user.$id);
-    };
-
-    fetchUserId();
+    }
   }, [user]);
 
   const getRandomProblemsForCards = () => {
@@ -61,7 +59,7 @@ const Main = ({ user, onLogout }) => {
     }
 
     navigate(`/chat/${data.sessionId}`, {
-      state: { userId: userId, initialMessage: message, fromMain: true },
+      state: { initialMessage: message, fromMain: true },
     });
   };
 
@@ -105,7 +103,7 @@ const Main = ({ user, onLogout }) => {
               <img src={assets.send_icon} alt="Send Icon" />
             </div>
           </div>
-          <p className="bottom-info">This may display inaccurate info</p>
+          <p className="bottom-info">AI may provide inaccurate info</p>
         </div>
       </div>
     </div>

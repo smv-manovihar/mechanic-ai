@@ -66,35 +66,18 @@ const Sidebar = ({ user, onNewChat, onChatSelect }) => {
 
   const handleRename = async (chatId) => {
     if (newTitle.trim()) {
-
       setChats((prevChats) =>
         prevChats.map((chat) =>
           chat.sessionId === chatId ? { ...chat, title: newTitle } : chat
         )
       );
-      const data = ChatAPI.renameTitle(userId,chatId,newTitle);
-      if(!data.success)
-      try {
-        // Send the new title to the backend
-        const response = await axios.post("http://localhost:5000/api/title", {
-          userId,
-          sessionId: chatId,
-          title: newTitle,
-        });
-
-        if (response.data.success) {
-          // Update the UI only if the backend operation is successful
-          setEditingTitle(null); // Close the rename input field
-          setNewTitle(""); // Clear the input
-          setMenuOpen(null); // Close the dropdown menu after renaming
-        } else {
-          console.error("Error renaming chat:", response.data.error);
-          // Optionally revert the title if the backend fails
-        }
-      } catch (error) {
-        console.error("Error renaming chat:", error);
-        // Optionally revert the title if the request fails
+      const data = ChatAPI.renameTitle(userId, chatId, newTitle);
+      if (!data.success) {
+        alert(data.error);
       }
+      setEditingTitle(null); // Close the rename input field
+      setNewTitle(""); // Clear the input
+      setMenuOpen(null); // Close the dropdown menu after renaming
     }
   };
 

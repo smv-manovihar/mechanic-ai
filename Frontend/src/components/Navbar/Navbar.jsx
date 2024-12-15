@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 const Navbar = ({ user, onLogout }) => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
+  const [userEmail, setUserEmail] = useState(user.email||"");
   const navigate = useNavigate();
   const location = useLocation();
 
