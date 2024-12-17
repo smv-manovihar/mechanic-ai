@@ -11,13 +11,7 @@ const Main = ({ user, onLogout }) => {
   const [cardMessages, setCardMessages] = useState([]);
   const inputRef = useRef(null);
   const navigate = useNavigate();
-  const [userId, setUserId] = useState(user?.$id || "");
-
-  useEffect(() => {
-    if (user?.$id) {
-      setUserId(user.$id);
-    }
-  }, [user]);
+  const userId = user?.$id || "";
 
   const getRandomProblemsForCards = () => {
     const keys = Object.keys(botResponses);
@@ -35,6 +29,7 @@ const Main = ({ user, onLogout }) => {
   };
 
   const handleSend = async () => {
+    console.log("handleSend triggered");
     if (!userId) {
       console.error("User ID is not available");
       return;
@@ -96,7 +91,7 @@ const Main = ({ user, onLogout }) => {
               placeholder="Enter your problem here"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              onKeyPress={(e) => e.key === "Enter" && handleSend()}
               ref={inputRef}
             />
             <div className="send-icon" onClick={handleSend}>

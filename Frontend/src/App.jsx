@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation} from "react-router-dom";
 import Sidebar from "./components/Sidebar/Sidebar";
 import Main from "./components/Main/Main";
 import Login from "./components/Auth/Login";
@@ -12,7 +12,7 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-
+  const location =  useLocation()
   useEffect(() => {
     const checkSession = async () => {
       if (!user) {
@@ -90,8 +90,8 @@ const App = () => {
         path="/chat/:sessionId"
         element={
           <>
-            <Sidebar user={user} />
-            <ChatPage user={user} onLogout={handleLogout} />
+            <Sidebar user={user}/>
+            <ChatPage user={user} onLogout={handleLogout} key={location.pathname} />
           </>
         }
       />

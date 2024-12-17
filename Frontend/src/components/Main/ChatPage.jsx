@@ -7,19 +7,13 @@ import ChatAPI from "../../config/ChatAPI";
 
 const ChatPage = ({ user, onLogout }) => {
   const { state } = useLocation();
-  const navigate = useNavigate(); // To reset state after processing
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const chatRef = useRef(null);
   const { sessionId } = useParams();
-  const [userId, setUserId] = useState(user?.$id || "");
-  const [hasInitialized, setHasInitialized] = useState(false);
-
-  useEffect(() => {
-    if (user?.$id && !userId) {
-      setUserId(user.$id);
-    }
-  }, [user, userId]);
+  const userId = user?.$id;
+  const initializationRef = useRef(false);
 
   const handleBotResponse = useCallback(
     async (userInput) => {
@@ -43,26 +37,25 @@ const ChatPage = ({ user, onLogout }) => {
 
   useEffect(() => {
     const initializeChat = async () => {
-      if (hasInitialized) return; // Prevent multiple initializations
+      // Prevent multiple initializations
+      if (initializationRef.current) return;
+      initializationRef.current = true;
 
       if (state?.initialMessage && state?.fromMain) {
-        // Handle fresh navigation from Main
         const initialMessage = {
           sender: "user",
           message: state.initialMessage,
         };
         setMessages([initialMessage]);
         await handleBotResponse(state.initialMessage);
-        setHasInitialized(true);
 
         // Clear state after processing to avoid repeated requests on reload
         navigate(".", { replace: true, state: {} });
       } else {
         // Fetch chat history if no initialMessage in state
         try {
-          const history = await ChatAPI.getHistory(userId, sessionId);
-          setMessages(history);
-          setHasInitialized(true);
+          const data = await ChatAPI.getHistory(userId, sessionId);
+          setMessages(data.conversation || []);
         } catch (error) {
           console.error("Error fetching conversation history:", error);
         }
@@ -72,7 +65,7 @@ const ChatPage = ({ user, onLogout }) => {
     if (userId && sessionId) {
       initializeChat();
     }
-  }, [userId, sessionId, state, handleBotResponse, hasInitialized, navigate]);
+  }, [userId, sessionId, state, handleBotResponse, navigate]);
 
   useEffect(() => {
     if (chatRef.current) {

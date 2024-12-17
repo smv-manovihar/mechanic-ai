@@ -37,19 +37,6 @@ const chatController = {
 
       await newSession.save();
 
-      // Update conversation with user's message
-      const dbRes = await updateConvo(userId, sessionId, "user", message);
-
-      // If saving fails
-      if (!dbRes) {
-        console.error("Error in Database Updation");
-        return res.status(500).json({
-          success: false,
-          response: "Oops! Something went wrong. Please try again",
-          error: "Failed to save the message",
-        });
-      }
-
       res.status(201).json({
         success: true,
         sessionId,
@@ -102,9 +89,9 @@ const chatController = {
         urls: null,
         message: "Messages added successfully",
       };
-      
+
       // Fetching SpareParts using API call
-      if (!data.replacementParts && !data.replacementParts[0]) {
+      if (data.replacementParts && data.replacementParts[0]){
         try {
           const response = axios.post(process.env.SPARE_PARTS_API, {
             parts: data.replacementParts,
@@ -115,9 +102,8 @@ const chatController = {
           console.error(error);
         }
       }
-      res.status(200).json({
-        sendData,
-      });
+      res.status(200).json(sendData);
+      
     } catch (error) {
       console.error(error);
       res.status(500).json({

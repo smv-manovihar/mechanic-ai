@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useParams} from "react-router-dom";
 import "./Sidebar.css";
 import { assets } from "../../assets/assets";
 import axios from "axios";
@@ -10,19 +10,16 @@ const Sidebar = ({ user, onNewChat, onChatSelect }) => {
   const [chats, setChats] = useState([]); // Chat sessions
   const [selectedChat, setSelectedChat] = useState(null); // Selected chat details
   const [loading, setLoading] = useState(false); // Loading state
-  const [userId, setUserId] = useState(null); // User ID
   const [offset, setOffset] = useState(0); // Offset for chat pagination
   const [hasMore, setHasMore] = useState(true); // Flag to check if more chats are available
   const [menuOpen, setMenuOpen] = useState(null); // Track open menu for each chat
   const dropdownRef = useRef(null); // Reference to dropdown
   const [editingTitle, setEditingTitle] = useState(null); // Track which chat is being renamed
   const [newTitle, setNewTitle] = useState(""); // Store the new title input
-
+  
+  const userId = user.$id ||""; // User ID
   const navigate = useNavigate();
-
-  useEffect(() => {
-    setUserId(user.$id);
-  }, [user]);
+  const {sessionId} = useParams();
 
   // Fetch chat sessions with pagination
   const fetchChats = useCallback(
@@ -52,9 +49,10 @@ const Sidebar = ({ user, onNewChat, onChatSelect }) => {
   // Initial fetch
   useEffect(() => {
     if (userId) {
+      console.log(sessionId);
       fetchChats();
     }
-  }, [userId, fetchChats]);
+  }, [userId]);
 
   const fetchChatDetails = async (chatId) => {
     navigate(`/chat/${chatId}`);
