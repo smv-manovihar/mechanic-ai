@@ -68,7 +68,7 @@ const Main = ({ user, onLogout }) => {
       <div className="main-container">
         <div className="greet">
           <p>
-            <span>Hello, Dev</span>
+            <span>Hello, {user.name}</span>
           </p>
           <p>How can I help you today?</p>
         </div>

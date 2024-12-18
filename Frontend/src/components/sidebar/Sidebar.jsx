@@ -49,10 +49,9 @@ const Sidebar = ({ user, onNewChat, onChatSelect }) => {
   // Initial fetch
   useEffect(() => {
     if (userId) {
-      console.log(sessionId);
       fetchChats();
     }
-  }, [userId]);
+  }, []);
 
   const fetchChatDetails = async (chatId) => {
     navigate(`/chat/${chatId}`);
@@ -139,7 +138,7 @@ const Sidebar = ({ user, onNewChat, onChatSelect }) => {
           src={assets.menu_icon}
           alt="menu"
         />
-        <div className="new-chat" onClick={onNewChat}>
+        <div className="new-chat" onClick={()=>navigate('/')}>
           <img src={assets.plus_icon} alt="new chat" />
           {extended ? <p>New Chat</p> : null}
         </div>
@@ -150,7 +149,7 @@ const Sidebar = ({ user, onNewChat, onChatSelect }) => {
           <p className="recent-title">Recent</p>
           <div className="recent-list">
             {chats.map((chat) => (
-              <div key={chat.sessionId} className="recent-entry">
+              <div key={chat.sessionId} className="recent-entry" onClick={() => fetchChatDetails(chat.sessionId)}>
                 <div
                   className={`chat-content ${
                     selectedChat === chat.sessionId ? "selected" : ""

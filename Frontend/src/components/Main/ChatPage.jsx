@@ -49,10 +49,8 @@ const ChatPage = ({ user, onLogout }) => {
         setMessages([initialMessage]);
         await handleBotResponse(state.initialMessage);
 
-        // Clear state after processing to avoid repeated requests on reload
         navigate(".", { replace: true, state: {} });
       } else {
-        // Fetch chat history if no initialMessage in state
         try {
           const data = await ChatAPI.getHistory(userId, sessionId);
           setMessages(data.conversation || []);
@@ -65,7 +63,7 @@ const ChatPage = ({ user, onLogout }) => {
     if (userId && sessionId) {
       initializeChat();
     }
-  }, [userId, sessionId, state, handleBotResponse, navigate]);
+  }, []);
 
   useEffect(() => {
     if (chatRef.current) {
