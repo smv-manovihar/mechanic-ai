@@ -86,20 +86,27 @@ const chatController = {
         success: true,
         response: data.response,
         title: data.title,
-        urls: null,
+        urls: [],
         message: "Messages added successfully",
       };
 
       // Fetching SpareParts using API call
-      if (data.replacementParts && data.replacementParts[0]){
+      if (data.replacementParts !== null){
         try {
-          const response = axios.post(process.env.SPARE_PARTS_API, {
+          const response = await axios.post(`${process.env.SPARE_PARTS_API}/api/parts-list`, {
             parts: data.replacementParts,
             carModel: data.carModel,
           });
-          sendData.urls = response.data.data;
+          console.log(await response.data.data)
+          sendData.urls = response.data.data.map(part => {
+            return part.url === null ? null : {
+              name: part.name, // Assuming part has a name property
+              url: `${process.env.SPARE_PARTS_API}${part.url}`
+            };
+          }).filter(part => part !== null); // Filter out null values
         } catch (error) {
           console.error(error);
+
         }
       }
       res.status(200).json(sendData);

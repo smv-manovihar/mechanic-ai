@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { useNavigate, useLocation, useParams} from "react-router-dom";
+import { useNavigate, useParams} from "react-router-dom";
 import "./Sidebar.css";
 import { assets } from "../../assets/assets";
-import axios from "axios";
 import ChatAPI from "../../config/ChatAPI";
 
 const Sidebar = ({ user, onNewChat, onChatSelect }) => {
@@ -34,26 +33,27 @@ const Sidebar = ({ user, onNewChat, onChatSelect }) => {
       const { chatList, offset: newOffset } = data;
 
       if (loadMore) {
-        setChats((prevChats) => [...prevChats, ...chatList]); // Append new chats
+        setChats((prevChats) => [...prevChats, ...chatList]);
       } else {
         setChats(chatList); // Set initial chats
       }
 
       setOffset(newOffset); // Update offset for the next call
-      setHasMore(chatList.length === 10); // If less than 10 items, no more
+      setHasMore(chatList.length === 10);
       setLoading(false);
     },
     [userId, loading, offset, hasMore]
   );
 
-  // Initial fetch
+
   useEffect(() => {
     if (userId) {
       fetchChats();
     }
-  }, []);
+  });
 
   const fetchChatDetails = async (chatId) => {
+    if(sessionId!==chatId)
     navigate(`/chat/${chatId}`);
   };
 
@@ -80,13 +80,8 @@ const Sidebar = ({ user, onNewChat, onChatSelect }) => {
 
   const handleDelete = async (chatId) => {
     try {
-      const response = await axios.post("http://localhost:5000/api/delete", {
-        userId: userId,
-        sessionId: chatId,
-      });
-
-      // Handle 204 status separately
-      if (response.status === 204) {
+      const data = await ChatAPI.deleteChat(userId, chatId);
+      if (data.success) {
         console.log("Chat deleted successfully!");
 
         // Update the chats in the UI
@@ -104,24 +99,8 @@ const Sidebar = ({ user, onNewChat, onChatSelect }) => {
         setMenuOpen(null);
 
         return; // Exit function after successful deletion
-      }
-
-      // For other statuses, check the response data
-      if (response?.data?.success) {
-        console.log("Chat deleted successfully!");
-        setChats((prevChats) =>
-          prevChats.filter((chat) => chat.sessionId !== chatId)
-        );
-        if (selectedChat === chatId) {
-          setSelectedChat(null);
-          onChatSelect(null);
-        }
-        setMenuOpen(null);
-      } else {
-        console.error(
-          "Error deleting chat:",
-          response?.data?.error || "Unknown error"
-        );
+      }else {
+        alert(data.error);
       }
     } catch (error) {
       console.error("Error deleting chat:", error.message);

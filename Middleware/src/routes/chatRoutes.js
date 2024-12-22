@@ -20,6 +20,7 @@ router.post("/new", chatController.createSession);
 // To get response in already existing chat session
 // request body = { userId, sessionId, message }
 // returns = { success, response, title, urls, error }
+// urls array structure = [{name,url}, null(if part is not available)]
 // http status codes: {
 // success: {
 //      200: Message added.
