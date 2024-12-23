@@ -8,7 +8,7 @@ import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion"; // Import framer-motion
 
 const botMessageVariants = {
-  hidden: { opacity: 0,},
+  hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.5 } },
 };
 
@@ -59,6 +59,10 @@ const ChatPage = ({ user, onLogout }) => {
       } else {
         try {
           const data = await ChatAPI.getHistory(userId, sessionId);
+          if (!data.success) {
+            alert("Session not found");
+            navigate("/");
+          }
           setMessages(data.conversation || []);
         } catch (error) {
           console.error("Error fetching conversation history:", error);
@@ -109,9 +113,7 @@ const ChatPage = ({ user, onLogout }) => {
                 className={`message ${
                   message.sender === "user" ? "user-message" : "bot-message"
                 }`}
-                variants={
-                  message.sender === "bot" ? botMessageVariants : {}
-                }
+                variants={message.sender === "bot" ? botMessageVariants : {}}
                 initial="hidden"
                 animate="visible"
               >

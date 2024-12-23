@@ -116,12 +116,13 @@ const Sidebar = ({ user, onChatSelect }) => {
           setChats((prevChats) =>
             prevChats.filter((chat) => chat.sessionId !== chatId)
           );
-
+          setOffset((prev)=> prev-1);
           // Deselect the chat if it was selected
           if (selectedChat === chatId) {
             setSelectedChat(null);
             onChatSelect(null);
           }
+          navigate('/');
 
           setMenuOpen(null);
 
