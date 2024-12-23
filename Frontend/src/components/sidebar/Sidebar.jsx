@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./Sidebar.css";
 import { assets } from "../../assets/assets";
 import ChatAPI from "../../config/ChatAPI";
-
+import ConfirmToast from "./ConfirmToast";
 const Sidebar = ({ user, onChatSelect }) => {
   const [extended, setExtended] = useState(false);
   const [chats, setChats] = useState([]);
@@ -20,40 +22,13 @@ const Sidebar = ({ user, onChatSelect }) => {
   const navigate = useNavigate();
   const { sessionId } = useParams();
 
-// Experimental code tried to change the title and add a entry dynamically
-  // const addRecentEntry = (newChat) => {
-  //   setChats((prevChats) => [newChat,...prevChats]);
-  // };
-
-  // const updateChatTitle = (sessionId, newTitle) => {
-  //   setChats((prevChats) => {
-  //     const chatIndex = prevChats.findIndex((chat) => chat.sessionId === sessionId);
-  
-  //     if (chatIndex === -1) {
-  //       return prevChats; // If no matching sessionId, return unchanged array
-  //     }
-  
-  //     if (prevChats[chatIndex].title === newTitle) {
-  //       return prevChats; // If titles are the same, return unchanged array
-  //     }
-  
-  //     // Create a new array with the updated title for the specific chat
-  //     const updatedChats = [...prevChats];
-  //     updatedChats[chatIndex] = {
-  //       ...updatedChats[chatIndex],
-  //       title: newTitle,
-  //     };
-  
-  //     return updatedChats;
-  //   });
-  // };
-  
   const fetchChats = useCallback(
     async (loadMore = false) => {
       if (!userId || loading || (!hasMore && loadMore)) return;
       setLoading(true);
       const data = await ChatAPI.getChats(userId, offset);
       if (!data.success) {
+        toast.error("Failed to load chats.");
         setLoading(false);
         return;
       }
@@ -95,7 +70,9 @@ const Sidebar = ({ user, onChatSelect }) => {
       );
       const data = await ChatAPI.renameTitle(userId, chatId, newTitle);
       if (!data.success) {
-        alert(data.error);
+        toast.error(data.error || "Failed to rename chat.");
+      } else {
+        toast.success("Chat renamed successfully.");
       }
       setEditingTitle(null);
       setNewTitle("");
@@ -103,38 +80,37 @@ const Sidebar = ({ user, onChatSelect }) => {
     }
   };
 
-  const handleDelete = async (chatId) => {
-    const confirm = window.confirm(
-      "Are you sure you want to delete this chat?"
-    );
-    if (confirm) {
-      try {
-        const data = await ChatAPI.deleteChat(userId, chatId);
-        if (data.success) {
-          // Update the chats in the UI
-          alert("Chat deleted successfully");
-          setChats((prevChats) =>
-            prevChats.filter((chat) => chat.sessionId !== chatId)
-          );
-          // Deselect the chat if it was selected
-          if (selectedChat === chatId) {
-            setSelectedChat(null);
-            onChatSelect(null);
+
+
+const handleDelete = async (chatId) => {
+  toast(
+    <ConfirmToast
+      message="Are you sure you want to delete this chat?"
+      onConfirm={async () => {
+        try {
+          const data = await ChatAPI.deleteChat(userId, chatId);
+          if (data.success) {
+            toast.success("Chat deleted successfully.");
+            setChats((prevChats) =>
+              prevChats.filter((chat) => chat.sessionId !== chatId)
+            );
+            if (selectedChat === chatId) {
+              setSelectedChat(null);
+              onChatSelect(null);
+            }
+            navigate("/");
+          } else {
+            toast.error(data.error || "Failed to delete chat.");
           }
-          navigate('/');
-
-          setMenuOpen(null);
-
-          return; // Exit function after successful deletion
-        } else {
-          alert(data.error);
+        } catch (error) {
+          toast.error("An error occurred while deleting the chat.");
         }
-      } catch (error) {
-        console.error("Error deleting chat:", error.message);
-        console.error("Full error object:", error.response?.data || error);
-      }
-    }
-  };
+      }}
+    />,
+    { autoClose: false } // Keeps the toast open until a button is clicked
+  );
+};
+
 
   return (
     <div className={`sidebar ${extended ? "extended" : ""}`}>

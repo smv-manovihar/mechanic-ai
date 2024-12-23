@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import "./Main.css";
 import Navbar from "../Navbar/Navbar";
 import { assets } from "../../assets/assets";
 import botResponses from "../../assets/botResponses.json";
 import ChatAPI from "../../config/ChatAPI";
 
-const Main = ({ user, onLogout}) => {
+const Main = ({ user, onLogout }) => {
   const [input, setInput] = useState("");
   const [cardMessages, setCardMessages] = useState([]);
+  const [isSending, setIsSending] = useState(false); // State to manage send button status
   const inputRef = useRef(null);
   const navigate = useNavigate();
   const userId = user?.$id || "";
@@ -33,12 +35,13 @@ const Main = ({ user, onLogout}) => {
   // Send message
   const handleSend = async () => {
     if (!userId) {
-      console.error("User ID is not available");
+      toast.error("User ID is not available");
       return;
     }
 
     const trimmedInput = input.trim();
     if (trimmedInput) {
+      setIsSending(true); // Disable the send button
       await createNewSession(trimmedInput);
       setInput(""); // Clear input after sending
     }
@@ -49,9 +52,10 @@ const Main = ({ user, onLogout}) => {
     const selectedProblem = botResponses[messageKey];
     if (selectedProblem) {
       const userMessage = selectedProblem.title;
+      setIsSending(true); // Disable the send button
       await createNewSession(userMessage);
     } else {
-      console.error(`No problem found for key: ${messageKey}`);
+      toast.error(`No problem found for key: ${messageKey}`);
     }
   };
 
@@ -60,14 +64,17 @@ const Main = ({ user, onLogout}) => {
     try {
       const data = await ChatAPI.createSession(userId, message);
       if (!data.success) {
-        return alert(data.error);
+        toast.error(data.error);
+        return;
       }
       navigate(`/chat/${data.sessionId}`, {
         state: { initialMessage: message, fromMain: true },
       });
     } catch (error) {
       console.error("Error creating session:", error);
-      alert("Failed to create a new session. Please try again later.");
+      toast.error("Failed to create a new session. Please try again later.");
+    } finally {
+      setIsSending(false); // Re-enable the button after the response
     }
   };
 
@@ -113,8 +120,19 @@ const Main = ({ user, onLogout}) => {
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
               ref={inputRef}
             />
-            <div className="send-icon" onClick={handleSend}>
-              <img src={assets.send_icon || ""} alt="Send Icon" />
+            <div
+              className="send-icon"
+              onClick={handleSend}
+              style={{
+                opacity: isSending ? 0.5 : 1,
+                cursor: isSending ? "not-allowed" : "pointer",
+              }}
+              disabled={isSending}
+            >
+              <img
+                src={assets.send_icon || ""}
+                alt="Send Icon"
+              />
             </div>
           </div>
           <p className="bottom-info">AI may provide inaccurate information</p>

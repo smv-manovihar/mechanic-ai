@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify"; // Import toast
 import "./Main.css";
 import Navbar from "../Navbar/Navbar";
 import { assets } from "../../assets/assets";
 import ChatAPI from "../../config/ChatAPI";
 import ReactMarkdown from "react-markdown";
-import { motion } from "framer-motion"; // Import framer-motion
+import { motion } from "framer-motion";
 
 const botMessageVariants = {
   hidden: { opacity: 0 },
@@ -17,6 +18,7 @@ const ChatPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [isSending, setIsSending] = useState(false); // State for disabling the send button
   const chatRef = useRef(null);
   const { sessionId } = useParams();
   const userId = user?.$id;
@@ -27,7 +29,7 @@ const ChatPage = ({ user, onLogout }) => {
       try {
         const data = await ChatAPI.addMessage(userId, sessionId, userInput);
         if (!data.success) {
-          alert(data.error);
+          toast.error(data.error); // Replaced alert with toast
           return;
         }
         const botMessage = {
@@ -37,6 +39,9 @@ const ChatPage = ({ user, onLogout }) => {
         setMessages((prevMessages) => [...prevMessages, botMessage]);
       } catch (error) {
         console.error("Error in bot response:", error);
+        toast.error("An error occurred while fetching the bot response."); // Added toast for error
+      } finally {
+        setIsSending(false); // Re-enable the button after the response
       }
     },
     [userId, sessionId]
@@ -60,12 +65,14 @@ const ChatPage = ({ user, onLogout }) => {
         try {
           const data = await ChatAPI.getHistory(userId, sessionId);
           if (!data.success) {
-            alert("Session not found");
+            toast.error("Session not found"); // Replaced alert with toast
             navigate("/");
+            return;
           }
           setMessages(data.conversation || []);
         } catch (error) {
           console.error("Error fetching conversation history:", error);
+          toast.error("Failed to load chat history."); // Added toast for error
         }
       }
     };
@@ -86,6 +93,7 @@ const ChatPage = ({ user, onLogout }) => {
       const userMessage = { sender: "user", message: input };
       setMessages((prevMessages) => [...prevMessages, userMessage]);
       setInput("");
+      setIsSending(true); // Disable the button while waiting for the response
       await handleBotResponse(input.trim());
     }
   };
@@ -138,11 +146,19 @@ const ChatPage = ({ user, onLogout }) => {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
             />
-            <div onClick={handleSend}>
-              <img src={assets.send_icon} alt="Send Icon" />
+            <div
+              className="send-icon"
+              onClick={handleSend}
+              style={{
+                opacity: isSending ? 0.5 : 1,
+                cursor: isSending ? "not-allowed" : "pointer",
+              }}
+              disabled={isSending}
+            >
+              <img src={assets.send_icon || ""} alt="Send Icon" />
             </div>
           </div>
-          <p className="bottom-info">AI may provide inaccurate info</p>
+          <p className="bottom-info">AI may provide inaccurate information</p>
         </div>
       </div>
     </div>
