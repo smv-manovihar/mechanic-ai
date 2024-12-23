@@ -18,13 +18,13 @@
 }
 
 .text {
-  color: rgb(0, 0, 0);  /* Adjust text color if needed */
+  color: rgb(255, 255, 255);  /* Adjust text color if needed */
   font-family: 'Urbanist', sans-serif;
   font-weight: 800;
 }
 
 .dot {
-  background: rgb(0, 0, 0);
+  background: rgb(255, 255, 255);
   height: 0.65em;
   width: 0.65em;
   border-radius: 50%;

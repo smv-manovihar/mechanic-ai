@@ -10,7 +10,7 @@ import user_icon from './user_icon.png';
 import youtube_icon from './youtube_icon.png';
 import message_icon from './message_icon.png';
 import code_icon from './code_icon.png';
-import send_icon from './send_icon.png';
+import send_icon from './send.svg';
 import gemini_icon from './gemini_icon.png';
 import battery_icon from './battery_icon.jpeg';
 import brakes_icon from './brakes_icon.png';

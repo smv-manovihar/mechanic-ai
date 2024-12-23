@@ -13,7 +13,7 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const location =  useLocation()
+  const location =  useLocation();
 
   useEffect(() => {
     const checkSession = async () => {
@@ -45,6 +45,8 @@ const App = () => {
       alert("Logout failed. Please try again.");
     }
   };
+
+
 
   if (loading) {
     return (

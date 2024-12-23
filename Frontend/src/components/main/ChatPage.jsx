@@ -8,8 +8,8 @@ import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion"; // Import framer-motion
 
 const botMessageVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 1 } },
+  hidden: { opacity: 0,},
+  visible: { opacity: 1, transition: { duration: 0.5 } },
 };
 
 const ChatPage = ({ user, onLogout }) => {
@@ -134,7 +134,7 @@ const ChatPage = ({ user, onLogout }) => {
               placeholder="Enter your message here"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSend()}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
             />
             <div onClick={handleSend}>
               <img src={assets.send_icon} alt="Send Icon" />

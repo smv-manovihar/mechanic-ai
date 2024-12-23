@@ -2,10 +2,9 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./Sidebar.css";
 import { assets } from "../../assets/assets";
-import axios from "axios";
 import ChatAPI from "../../config/ChatAPI";
 
-const Sidebar = ({ user, onNewChat, onChatSelect }) => {
+const Sidebar = ({ user, onChatSelect }) => {
   const [extended, setExtended] = useState(false);
   const [chats, setChats] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
@@ -19,8 +18,36 @@ const Sidebar = ({ user, onNewChat, onChatSelect }) => {
 
   const userId = user.$id || "";
   const navigate = useNavigate();
-  const { sessionId } = useParams(); // Get current session ID from URL
+  const { sessionId } = useParams();
 
+// Experimental code tried to change the title and add a entry dynamically
+  // const addRecentEntry = (newChat) => {
+  //   setChats((prevChats) => [newChat,...prevChats]);
+  // };
+
+  // const updateChatTitle = (sessionId, newTitle) => {
+  //   setChats((prevChats) => {
+  //     const chatIndex = prevChats.findIndex((chat) => chat.sessionId === sessionId);
+  
+  //     if (chatIndex === -1) {
+  //       return prevChats; // If no matching sessionId, return unchanged array
+  //     }
+  
+  //     if (prevChats[chatIndex].title === newTitle) {
+  //       return prevChats; // If titles are the same, return unchanged array
+  //     }
+  
+  //     // Create a new array with the updated title for the specific chat
+  //     const updatedChats = [...prevChats];
+  //     updatedChats[chatIndex] = {
+  //       ...updatedChats[chatIndex],
+  //       title: newTitle,
+  //     };
+  
+  //     return updatedChats;
+  //   });
+  // };
+  
   const fetchChats = useCallback(
     async (loadMore = false) => {
       if (!userId || loading || (!hasMore && loadMore)) return;

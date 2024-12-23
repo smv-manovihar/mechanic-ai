@@ -61,7 +61,8 @@
   background-color: #292943; /* Default background color */
   border-radius: 50%; /* Makes it circular */
   cursor: pointer; /* Indicates interactivity */
-  transition: background-color 0.3s ease; /* Smooth hover transition */
+  transition: background-color 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .title {
@@ -70,7 +71,7 @@
   margin-left:2rem;
 }
 .user-icon:hover {
-  background-color: #060608;
+  background-color: #3f4564;
 }
 
 .user-icon::before {

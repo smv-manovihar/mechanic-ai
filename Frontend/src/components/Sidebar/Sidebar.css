@@ -22,14 +22,18 @@ body {
   margin-bottom: 20px;
   cursor: pointer;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: background-color 0.3s;
+  transition: background-color 0.3s ease;
   padding:10px;
   border-radius: 50%;
   background-color: #303342; /* Add a background color */
 }
 
 .sidebar .menu:hover {
-  background-color: #c0c0c0;
+  background-color: #3f4564;
+}
+
+.sidebar .new-chat:hover {
+  background-color: #3f4564;
 }
 .sidebar .new-chat {
   margin-top: 50px;
@@ -48,16 +52,20 @@ body {
   transition: background-color 0.3s;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
 }
-
-.sidebar .new-chat:hover {
-  background-color: #101118;
-}
 .sidebar .recent {
   display: flex;
   flex-direction: column;
   margin-bottom: 370px;
+  animation: fadeIn 2s ease;
 }
-
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
 .sidebar .recent-title {
   margin-top: 30px;
   margin-bottom: 20px;
@@ -67,13 +75,14 @@ body {
 .sidebar .recent-entry {
   display: flex;
   align-items: start;
+  margin-bottom: 0.5rem;
   gap: 10px;
   padding: 10px;
   padding-right: 40px;
   border-radius: 50px;
-  color: #282828;
+  color: #303342;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s ease;
 }
 
 .sidebar .recent-entry:hover {
@@ -225,10 +234,6 @@ body {
   cursor: pointer;
 }
 
-.sidebar .recent-entry.selected {
-  background-color: #555;
-}
-
 .sidebar .menu-icon {
   cursor: pointer;
   width: 20px;
@@ -257,7 +262,7 @@ body {
 }
 
 .recent-entry.active {
-  background-color: #4c4e65;
+  background-color: #3f4564;
   font-weight: bold;
   /* border-left: 4px solid #f7f6f5; */
 }

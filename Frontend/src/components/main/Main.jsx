@@ -6,13 +6,14 @@ import { assets } from "../../assets/assets";
 import botResponses from "../../assets/botResponses.json";
 import ChatAPI from "../../config/ChatAPI";
 
-const Main = ({ user, onLogout }) => {
+const Main = ({ user, onLogout}) => {
   const [input, setInput] = useState("");
   const [cardMessages, setCardMessages] = useState([]);
   const inputRef = useRef(null);
   const navigate = useNavigate();
   const userId = user?.$id || "";
 
+  // Generate random cards
   const getRandomProblemsForCards = () => {
     const keys = Object.keys(botResponses);
     const randomProblems = [];
@@ -20,6 +21,7 @@ const Main = ({ user, onLogout }) => {
       const randomKey = keys[Math.floor(Math.random() * keys.length)];
       const randomProblem = botResponses[randomKey];
       if (
+        randomProblem &&
         !randomProblems.some((problem) => problem.title === randomProblem.title)
       ) {
         randomProblems.push({ ...randomProblem, key: randomKey });
@@ -28,39 +30,52 @@ const Main = ({ user, onLogout }) => {
     return randomProblems;
   };
 
+  // Send message
   const handleSend = async () => {
-    console.log("handleSend triggered");
     if (!userId) {
       console.error("User ID is not available");
       return;
     }
 
-    if (input.trim()) {
-      createNewSession(input.trim());
+    const trimmedInput = input.trim();
+    if (trimmedInput) {
+      await createNewSession(trimmedInput);
+      setInput(""); // Clear input after sending
     }
   };
 
+  // Handle card click
   const handleCardClick = async (messageKey) => {
     const selectedProblem = botResponses[messageKey];
-    const userMessage = selectedProblem.title;
-    createNewSession(userMessage);
-  };
-
-  const createNewSession = async (message) => {
-    console.log(userId);
-    const data = await ChatAPI.createSession(userId, message);
-    if (!data.success) {
-      return alert(data.error);
+    if (selectedProblem) {
+      const userMessage = selectedProblem.title;
+      await createNewSession(userMessage);
+    } else {
+      console.error(`No problem found for key: ${messageKey}`);
     }
-
-    navigate(`/chat/${data.sessionId}`, {
-      state: { initialMessage: message, fromMain: true },
-    });
   };
 
+  // Create new session
+  const createNewSession = async (message) => {
+    try {
+      const data = await ChatAPI.createSession(userId, message);
+      if (!data.success) {
+        return alert(data.error);
+      }
+      navigate(`/chat/${data.sessionId}`, {
+        state: { initialMessage: message, fromMain: true },
+      });
+    } catch (error) {
+      console.error("Error creating session:", error);
+      alert("Failed to create a new session. Please try again later.");
+    }
+  };
+
+  // Initialize cards
   useEffect(() => {
     setCardMessages(getRandomProblemsForCards());
-  }, [setCardMessages]);
+    inputRef.current?.focus(); // Focus input on component mount
+  }, []);
 
   return (
     <div className="main">
@@ -75,12 +90,16 @@ const Main = ({ user, onLogout }) => {
         <div className="cards">
           {cardMessages.map((card, index) => (
             <div
-              key={index}
+              key={card.key || index}
               className="card"
               onClick={() => handleCardClick(card.key)}
             >
               <p>{card.title}</p>
-              <img src={assets[card.icon]} alt={`${card.title} Icon`} />
+              <img
+                src={assets[card.icon] || ""}
+                alt={`${card.title} Icon`}
+                onError={(e) => (e.target.style.display = "none")}
+              />
             </div>
           ))}
         </div>
@@ -91,14 +110,14 @@ const Main = ({ user, onLogout }) => {
               placeholder="Enter your problem here"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSend()}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
               ref={inputRef}
             />
             <div className="send-icon" onClick={handleSend}>
-              <img src={assets.send_icon} alt="Send Icon" />
+              <img src={assets.send_icon || ""} alt="Send Icon" />
             </div>
           </div>
-          <p className="bottom-info">AI may provide inaccurate info</p>
+          <p className="bottom-info">AI may provide inaccurate information</p>
         </div>
       </div>
     </div>
