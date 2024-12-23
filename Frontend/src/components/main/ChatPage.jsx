@@ -4,6 +4,13 @@ import "./Main.css";
 import Navbar from "../Navbar/Navbar";
 import { assets } from "../../assets/assets";
 import ChatAPI from "../../config/ChatAPI";
+import ReactMarkdown from "react-markdown";
+import { motion } from "framer-motion"; // Import framer-motion
+
+const botMessageVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 1 } },
+};
 
 const ChatPage = ({ user, onLogout }) => {
   const { state } = useLocation();
@@ -37,7 +44,6 @@ const ChatPage = ({ user, onLogout }) => {
 
   useEffect(() => {
     const initializeChat = async () => {
-      // Prevent multiple initializations
       if (initializationRef.current) return;
       initializationRef.current = true;
 
@@ -99,13 +105,24 @@ const ChatPage = ({ user, onLogout }) => {
                   className="message-icon"
                 />
               )}
-              <div
+              <motion.div
                 className={`message ${
                   message.sender === "user" ? "user-message" : "bot-message"
                 }`}
+                variants={
+                  message.sender === "bot" ? botMessageVariants : {}
+                }
+                initial="hidden"
+                animate="visible"
               >
-                <p>{message.message}</p>
-              </div>
+                {message.sender === "bot" ? (
+                  <ReactMarkdown className="bot-formatted-response">
+                    {message.message}
+                  </ReactMarkdown>
+                ) : (
+                  <p>{message.message}</p>
+                )}
+              </motion.div>
             </div>
           ))}
         </div>

@@ -8,11 +8,13 @@ import { account } from "./components/Auth/appwrite";
 import "./App.css";
 import Loading from "./components/Auth/Loading";
 import ChatPage from "./components/Main/ChatPage";
+
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const location =  useLocation()
+
   useEffect(() => {
     const checkSession = async () => {
       if (!user) {
@@ -31,7 +33,7 @@ const App = () => {
     };
 
     checkSession();
-  }, [user]);
+  }, [user, setUser]);
 
   const handleLogout = async () => {
     try {

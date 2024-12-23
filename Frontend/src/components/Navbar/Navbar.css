@@ -66,6 +66,8 @@
 
 .title {
   cursor: pointer;
+  font-size: x-large;
+  margin-left:2rem;
 }
 .user-icon:hover {
   background-color: #060608;

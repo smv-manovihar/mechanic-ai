@@ -1,10 +1,12 @@
-import { useState, useEffect} from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import "./Navbar.css";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Navbar = ({ user, onLogout }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [userEmail, setUserEmail] = useState(user.email||"");
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (user && user.email) {
@@ -23,11 +25,13 @@ const Navbar = ({ user, onLogout }) => {
 
   return (
     <div className="nav">
-      <Link to='/'style={{ textDecoration: 'none', color: 'inherit' }}>
-      <div className="title">
+      <div className="title" onClick={() => {
+        if (location.pathname !== '/') {
+          navigate('/');
+        }
+      }}>
         MechanicAI
       </div>
-      </Link>
       <div className="user-menu">
         <div className="user-icon" onClick={toggleMenu}>
           {userEmail ? userEmail.charAt(0).toUpperCase() : "U"}
