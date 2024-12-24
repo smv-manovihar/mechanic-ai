@@ -14,16 +14,30 @@
   position: relative;
 }
 
+/* Initial state for the dropdown menu (hidden) */
+/* Initial hidden state for the dropdown menu */
 .dropdown-menu {
   position: absolute;
-  top: 45px; /* Positions the dropdown just below the icon */
-  right: 0;
+  top: 55px;
+  right: 5px;
   background-color: #232530;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
   border-radius: 4px;
   width: auto;
-  z-index: 1000; /* Ensures it overlays other elements */
+  z-index: 1000;
+  opacity: 0; /* Hidden initially */
+  transform: translateY(-10px); /* Positioned slightly above */
+  transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth animation */
+  pointer-events: none; /* Prevent clicks when hidden */
 }
+
+/* When the menu is open */
+.dropdown-menu.open {
+  opacity: 1; /* Fully visible */
+  transform: translateY(0); /* Slide into position */
+  pointer-events: auto; /* Enable clicks */
+}
+
 
 .dropdown-button {
   background: none;
@@ -38,17 +52,16 @@
 }
 
 .dropdown-button:hover {
-  background-color: #08080a;
-  color: #ffffff; /* Ensure text color is white on hover */
+  background-color: #3f4564 !important; /* Darker shade for the background */
+  color: #ff9001; /* Keep the text color consistent */
   transform: scale(1.05);
 }
 
 .logout-button {
-  color: red;
+  color: red !important;
 }
 
-.logout-button:hover {
-  color: darkred; /* Changes the text color to dark red when hovered */
+.logout-button:hover { /* Changes the text color to dark red when hovered */
   transform: scale(1.05); /* Slightly enlarges the button on hover */
 }
 
@@ -78,3 +91,45 @@
   font-size: 20px;
 }
 
+.link-to-api {
+  margin-right: 1rem; 
+  cursor: pointer;/* Adds spacing to the right */
+}
+
+.api-link {
+  color: #ff9001; /* Matches the navbar theme */
+  font-weight: bold;
+  font-size: 18px;
+  text-decoration: none;
+  padding: 8px 12px;
+  border: 1px solid #ff9001; /* Adds a border for emphasis */
+  border-radius: 5px; /* Softens the edges */
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+.api-link:hover {
+  background-color: #ff9001; /* Inverts the theme on hover */
+  color: #232530; /* Makes text contrast well */
+  transform: scale(1.05); /* Slight hover effect */
+}
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  font-size: 22px;
+  color: #ff9001;
+}
+
+.link-to-api {
+  margin-left: auto; /* Pushes it to the right */
+  margin-right: 1rem; /* Adds spacing to the right */
+  cursor: pointer;
+  display: flex;
+  align-items: center; /* Centers the link vertically */
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+}

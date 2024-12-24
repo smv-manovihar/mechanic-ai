@@ -6,6 +6,7 @@ import "./Sidebar.css";
 import { assets } from "../../assets/assets";
 import ChatAPI from "../../config/ChatAPI";
 import ConfirmToast from "./ConfirmToast";
+
 const Sidebar = ({ user, onChatSelect }) => {
   const [extended, setExtended] = useState(false);
   const [chats, setChats] = useState([]);
@@ -14,13 +15,40 @@ const Sidebar = ({ user, onChatSelect }) => {
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [menuOpen, setMenuOpen] = useState(null);
-  const dropdownRef = useRef(null);
   const [editingTitle, setEditingTitle] = useState(null);
   const [newTitle, setNewTitle] = useState("");
 
+
+  const menuRef = useRef(null);
+  const inputRef = useRef(null);
   const userId = user.$id || "";
   const navigate = useNavigate();
   const { sessionId } = useParams();
+
+  // Click outside handler effect
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Close menu dropdown if clicked outside
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(null);
+      }
+      
+      // Close rename input if clicked outside
+      if (
+        editingTitle &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target)
+      ) {
+        setEditingTitle(null);
+        setNewTitle("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [editingTitle]);
 
   const fetchChats = useCallback(
     async (loadMore = false) => {
@@ -57,7 +85,8 @@ const Sidebar = ({ user, onChatSelect }) => {
     navigate(`/chat/${chatId}`);
   };
 
-  const handleMenuClick = (chatId) => {
+  const handleMenuClick = (e, chatId) => {
+    e.stopPropagation();
     setMenuOpen((prev) => (prev === chatId ? null : chatId));
   };
 
@@ -80,37 +109,34 @@ const Sidebar = ({ user, onChatSelect }) => {
     }
   };
 
-
-
-const handleDelete = async (chatId) => {
-  toast(
-    <ConfirmToast
-      message="Are you sure you want to delete this chat?"
-      onConfirm={async () => {
-        try {
-          const data = await ChatAPI.deleteChat(userId, chatId);
-          if (data.success) {
-            toast.success("Chat deleted successfully.");
-            setChats((prevChats) =>
-              prevChats.filter((chat) => chat.sessionId !== chatId)
-            );
-            if (selectedChat === chatId) {
-              setSelectedChat(null);
-              onChatSelect(null);
+  const handleDelete = async (chatId) => {
+    toast(
+      <ConfirmToast
+        message="Are you sure you want to delete this chat?"
+        onConfirm={async () => {
+          try {
+            const data = await ChatAPI.deleteChat(userId, chatId);
+            if (data.success) {
+              toast.success("Chat deleted successfully.");
+              setChats((prevChats) =>
+                prevChats.filter((chat) => chat.sessionId !== chatId)
+              );
+              if (selectedChat === chatId) {
+                setSelectedChat(null);
+                onChatSelect(null);
+              }
+              navigate("/");
+            } else {
+              toast.error(data.error || "Failed to delete chat.");
             }
-            navigate("/");
-          } else {
-            toast.error(data.error || "Failed to delete chat.");
+          } catch (error) {
+            toast.error("An error occurred while deleting the chat.");
           }
-        } catch (error) {
-          toast.error("An error occurred while deleting the chat.");
-        }
-      }}
-    />,
-    { autoClose: false } // Keeps the toast open until a button is clicked
-  );
-};
-
+        }}
+      />,
+      { autoClose: false }
+    );
+  };
 
   return (
     <div className={`sidebar ${extended ? "extended" : ""}`}>
@@ -146,10 +172,10 @@ const handleDelete = async (chatId) => {
                 >
                   {editingTitle === chat.sessionId ? (
                     <input
+                      ref={inputRef}
                       type="text"
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
-                      onBlur={() => setEditingTitle(null)}
                       onKeyPress={(e) => {
                         if (e.key === "Enter") handleRename(chat.sessionId);
                       }}
@@ -159,17 +185,14 @@ const handleDelete = async (chatId) => {
                     <p>{chat.title || "New Chat"}</p>
                   )}
                 </div>
-                <div className="menu-icon" ref={dropdownRef}>
+                <div className="menu-icon">
                   <svg
                     width="20"
                     height="20"
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleMenuClick(chat.sessionId);
-                    }}
+                    onClick={(e) => handleMenuClick(e, chat.sessionId)}
                   >
                     <circle cx="12" cy="5" r="2" fill="white" />
                     <circle cx="12" cy="12" r="2" fill="white" />
@@ -178,6 +201,7 @@ const handleDelete = async (chatId) => {
                   {menuOpen === chat.sessionId && (
                     <div
                       className="menu-dropdown"
+                      ref={menuRef}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button

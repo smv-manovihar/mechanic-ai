@@ -18,7 +18,7 @@ const ChatPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [isSending, setIsSending] = useState(false); // State for disabling the send button
+  const [isSending, setIsSending] = useState(false);
   const chatRef = useRef(null);
   const { sessionId } = useParams();
   const userId = user?.$id;
@@ -118,17 +118,34 @@ const ChatPage = ({ user, onLogout }) => {
                 />
               )}
               <motion.div
-                className={`message ${
-                  message.sender === "user" ? "user-message" : "bot-message"
-                }`}
+                className={`message ${message.sender === "user" ? "user-message" : "bot-message"}`}
                 variants={message.sender === "bot" ? botMessageVariants : {}}
                 initial="hidden"
                 animate="visible"
               >
                 {message.sender === "bot" ? (
-                  <ReactMarkdown className="bot-formatted-response">
-                    {message.message}
-                  </ReactMarkdown>
+                  <>
+                    <ReactMarkdown className="bot-formatted-response">
+                      {message.message}
+                    </ReactMarkdown>
+
+                    {/* Display URLs if available */}
+                    {message.urls && message.urls.length > 0 && (
+                      <div className="urls-container">
+                        {message.urls.map((urlObj, i) => (
+                          <a
+                            key={i}
+                            href={urlObj.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="url-link"
+                          >
+                            🔗 {urlObj.name}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </> 
                 ) : (
                   <p>{message.message}</p>
                 )}

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import "./Navbar.css";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 
 const Navbar = ({ user, onLogout }) => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState(user.email||"");
+  const [userEmail, setUserEmail] = useState(user.email || "");
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -23,32 +23,51 @@ const Navbar = ({ user, onLogout }) => {
     setMenuOpen(false);
   };
 
+  const closeMenu = (e) => {
+    if (menuOpen && !e.target.closest(".user-menu")) {
+      setMenuOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("click", closeMenu);
+    return () => document.removeEventListener("click", closeMenu);
+  }, [menuOpen]);
+
   return (
     <div className="nav">
-      <div className="title" onClick={() => {
-        if (location.pathname !== '/') {
-          navigate('/');
-        }
-      }}>
+      <div
+        className="title"
+        onClick={() => {
+          if (location.pathname !== "/") {
+            navigate("/");
+          }
+        }}
+      >
         MechanicAI
+      </div>
+      <div className="link-to-api">
+        <a
+          href={"http://localhost:5001"}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="api-link"
+        >
+          🛒Marketplace🛠️
+        </a>
       </div>
       <div className="user-menu">
         <div className="user-icon" onClick={toggleMenu}>
           {userEmail ? userEmail.charAt(0).toUpperCase() : "U"}
         </div>
-        {menuOpen && (
-          <div className="dropdown-menu">
-            <button onClick={handleProfileInfo} className="dropdown-button">
-              {userEmail || "Unknown User"}
-            </button>
-            <button
-              className="dropdown-button logout-button"
-              onClick={onLogout}
-            >
-              Logout
-            </button>
-          </div>
-        )}
+        <div className={`dropdown-menu ${menuOpen ? "open" : ""}`}>
+          <button onClick={handleProfileInfo} className="dropdown-button">
+            {userEmail || "Unknown User"}
+          </button>
+          <button className="dropdown-button logout-button" onClick={onLogout}>
+            Logout
+          </button>
+        </div>
       </div>
     </div>
   );
