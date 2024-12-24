@@ -23,20 +23,30 @@ const ChatPage = ({ user, onLogout }) => {
   const { sessionId } = useParams();
   const userId = user?.$id;
   const initializationRef = useRef(false);
+  const [loading, setLoading] = useState(false);
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const placeholderMessages = ["Thinking...", "Diagnosing...", "Just a sec..."];
 
   const handleBotResponse = useCallback(
-    async (userInput) => {
+    async (userInput, placeholderId) => {
       try {
         const data = await ChatAPI.addMessage(userId, sessionId, userInput);
         if (!data.success) {
           toast.error(data.error); // Replaced alert with toast
+          setLoading(false);
           return;
         }
         const botMessage = {
           sender: "bot",
           message: data.response,
+          urls: data.urls, // Add urls to the bot message
         };
-        setMessages((prevMessages) => [...prevMessages, botMessage]);
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === placeholderId ? botMessage : msg
+          )
+        );
+        setLoading(false);
       } catch (error) {
         console.error("Error in bot response:", error);
         toast.error("An error occurred while fetching the bot response."); // Added toast for error
@@ -57,8 +67,14 @@ const ChatPage = ({ user, onLogout }) => {
           sender: "user",
           message: state.initialMessage,
         };
-        setMessages([initialMessage]);
-        await handleBotResponse(state.initialMessage);
+        const placeholderId = Date.now();
+        setMessages([
+          initialMessage,
+          { id: placeholderId, sender: "bot", message: placeholderMessages[0] },
+        ]);
+
+        setLoading(true); // Start loading to enable placeholder cycling
+        await handleBotResponse(state.initialMessage, placeholderId);
 
         navigate(".", { replace: true, state: {} });
       } else {
@@ -88,13 +104,30 @@ const ChatPage = ({ user, onLogout }) => {
     }
   }, [messages]);
 
+  useEffect(() => {
+    let interval;
+    if (loading) {
+      interval = setInterval(() => {
+        setPlaceholderIndex(
+          (prevIndex) => (prevIndex + 1) % placeholderMessages.length
+        );
+      }, 2000); // Rotate every second
+    }
+    return () => clearInterval(interval);
+  }, [loading]);
+
   const handleSend = async () => {
     if (input.trim()) {
       const userMessage = { sender: "user", message: input };
-      setMessages((prevMessages) => [...prevMessages, userMessage]);
+      const placeholderId = Date.now();
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        userMessage,
+        { id: placeholderId, sender: "bot", message: placeholderMessages[0] },
+      ]);
       setInput("");
-      setIsSending(true); // Disable the button while waiting for the response
-      await handleBotResponse(input.trim());
+      setLoading(true); // Disable the button while waiting for the response
+      await handleBotResponse(input.trim(), placeholderId);
     }
   };
 
@@ -118,34 +151,42 @@ const ChatPage = ({ user, onLogout }) => {
                 />
               )}
               <motion.div
-                className={`message ${message.sender === "user" ? "user-message" : "bot-message"}`}
+                className={`message ${
+                  message.sender === "user" ? "user-message" : "bot-message"
+                }`}
                 variants={message.sender === "bot" ? botMessageVariants : {}}
                 initial="hidden"
                 animate="visible"
               >
                 {message.sender === "bot" ? (
                   <>
-                    <ReactMarkdown className="bot-formatted-response">
-                      {message.message}
+                    <ReactMarkdown
+                      className={`bot-formatted-response ${
+                        loading && message.id ? "pulse-animation" : ""
+                      }`}
+                    >
+                      {loading && message.id
+                        ? placeholderMessages[placeholderIndex]
+                        : message.message}
                     </ReactMarkdown>
 
                     {/* Display URLs if available */}
                     {message.urls && message.urls.length > 0 && (
                       <div className="urls-container">
-                        {message.urls.map((urlObj, i) => (
+                        {message.urls.map((urlData, idx) => (
                           <a
-                            key={i}
-                            href={urlObj.url}
+                            key={idx}
+                            href={urlData.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="url-link"
+                            className="bot-url-link"
                           >
-                            🔗 {urlObj.name}
+                            🔗 {urlData.name || `Link ${idx + 1}`}
                           </a>
                         ))}
                       </div>
                     )}
-                  </> 
+                  </>
                 ) : (
                   <p>{message.message}</p>
                 )}

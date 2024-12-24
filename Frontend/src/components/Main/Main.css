@@ -253,3 +253,19 @@ body {
 .main-content.with-sidebar {
   margin-left: 250px;
 }
+
+@keyframes pulse {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+
+.pulse-animation {
+  animation: pulse 1.5s infinite;
+}
