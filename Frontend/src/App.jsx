@@ -41,6 +41,7 @@ const App = () => {
     try {
       await account.deleteSession("current");
       setIsAuthenticated(false);
+      setUser(null);
       toast.success("Logged out successfully!"); // Use toast for success
     } catch (error) {
       console.error("Logout failed:", error);

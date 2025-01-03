@@ -8,8 +8,3 @@ client
 
 export const account = new Account(client);
 export { ID } from 'appwrite';
-
-
-
-
-

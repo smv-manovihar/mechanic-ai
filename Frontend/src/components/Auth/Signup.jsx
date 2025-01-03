@@ -5,6 +5,7 @@ import "./Auth.css";
 import { toast } from "react-toastify";
 
 const Signup = ({ onSignup }) => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false); // State for button text and disabled status
@@ -15,7 +16,7 @@ const Signup = ({ onSignup }) => {
     setIsSubmitting(true); // Disable the button and change its text
     try {
       const userId = ID.unique();
-      await account.create(userId, email, password);
+      await account.create(userId, email, password,name);
       await account.createEmailPasswordSession(email, password);
       onSignup(true);
       navigate("/"); // Redirect to the main page
@@ -41,6 +42,13 @@ const Signup = ({ onSignup }) => {
     <div className="auth-container">
       <h2>Sign Up</h2>
       <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
         <input
           type="email"
           placeholder="Email"
