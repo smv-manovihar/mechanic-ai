@@ -55,6 +55,7 @@ MechanicAI is a self-hostable platform that combines AI-powered vehicle diagnost
 - Python
 - MongoDB
 - Ollama (for hosting Llama 3.1)
+- Ngrok free domain
 
 ### Installation
 
@@ -91,9 +92,9 @@ MechanicAI is a self-hostable platform that combines AI-powered vehicle diagnost
      node src/app.js
      ```
    - AI Server:
-     ```bash
-     flask run
-     ```
+      - Open the `JanathaGarager_Server.ipynb` in  [`Google colab`](https://colab.research.google.com) and run all the cells.
+      - **NOTE**: This notebook needs your additional own **MongoDB** database URI and `ngrok` authentication token setup.
+   - ⚠️ Create .env for appropriate variables that are needed for the application.
 2. Open your browser and navigate to `http://localhost:3000`.
 
 ---
