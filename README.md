@@ -60,7 +60,7 @@ MechanicAI is a self-hostable platform that combines AI-powered vehicle diagnost
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/smv-manovihar/MechanicAI.git
+   git clone https://github.com/smv-manovihar/mechanic-ai.git
    ```
 2. Install dependencies:
    - Frontend:
